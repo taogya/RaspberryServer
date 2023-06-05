@@ -44,6 +44,16 @@
             "django": true
         },
         {
+            "name": "Collectstatic",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/pi/manage.py",
+            "args": [
+                "collectstatic"
+            ],
+            "django": true
+        },
+        {
             "name": "Test",
             "type": "python",
             "request": "launch",

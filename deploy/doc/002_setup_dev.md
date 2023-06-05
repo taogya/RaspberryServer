@@ -53,7 +53,7 @@ $ sudo ufw status
 
 1. make executing python environment
     ```sh
-    $ cd develop/RaspberryServer/
+    $ cd "you_path"/RaspberryServer
     $ python -m venv .venv
     $ . .venv/bin/activate
     ```
@@ -61,7 +61,7 @@ $ sudo ufw status
 1. make executing Django environment
     ```sh
     $ pip install isort flake8 autopep8 radon
-    $ pip install Django psycopg2-binary uWSGI
+    $ pip install Django psycopg2-binary
     $ django-admin startproject pi
     $ sudo sh deploy/shells/secret_key_gen.sh deploy/conf/template/env.conf
     -> set output to RS_PRJ_SECRET_KEY in deploy/conf/template/env.conf
@@ -170,20 +170,55 @@ $ sudo ufw status
 
 1. access test
     ```sh
-    $ . ../deploy/conf/template/env.conf
-    $ cd pi
-    $ python manage.py makemigrations
-    $ python manage.py migrate
-    $ python manage.py createsuperuser
-    -> input information of super user
-    $ python manage.py runserver 0.0.0.0:8080
+    $ export $(cat deploy/conf/template/env.conf | grep -v "^#" | xargs)
+    $ python pi/manage.py makemigrations
+    $ python pi/manage.py migrate
+    $ python pi/manage.py createsuperuser
+    -> input info of super user
+    $ python pi/manage.py runserver 0.0.0.0:8080
     ```
     try access URL below on local browser after configure ssh port forwarding.
     http://localhost:8080/admin
 
+## Setup Appllication Server with uWSGI
+1. package installation
+    ```sh
+    $ sudo apt-get install libpcre3-dev
+    $ pip install uwsgi
+    ```
+1. modify configration
+    ```sh
+    $ vi deploy/conf/template/uwsgi.service
+    -> modify as needed.
+    $ vi deploy/conf/template/uwsgi.ini
+    -> modify as needed. (if do connection test, uncomment "http")
+    ```
+1. create and start service
+    ```sh
+    $ sudo ln -s /home/pi-srv/app/RaspberryServer/deploy/conf/template/uwsgi.service /etc/systemd/system/uwsgi.service
+    $ sudo systemctl daemon-reload
+    $ sudo systemctl enable uwsgi
+    $ sudo systemctl start uwsgi
+    ```
+
 ## Setup Web Server with nginx
-```sh
-$ sudo apt-get install -y nginx
-under maintenance
-```
+1. package installation
+    ```sh
+    $ sudo apt-get install -y nginx
+    ```
+1. modify configration
+    ```sh
+    $ cp /etc/nginx/uwsgi_params deploy/conf/template/uwsgi_params
+    $ vi deploy/conf/template/raspberry-server
+    -> modify as needed
+    ```
+1. create and start service
+    ```sh
+    $ sudo ln -s /home/pi-srv/app/RaspberryServer/deploy/conf/template/raspberry-server /etc/nginx/sites-available/
+    $ sudo ln -s /etc/nginx/sites-available/raspberry-server /etc/nginx/sites-enabled/raspberry-server
+    $ export $(cat deploy/conf/template/env.conf | grep -v "^#" | xargs)
+    $ python pi/manage.py collectstatic
+    $ sudo systemctl enable nginx
+    $ sudo systemctl start nginx
+    ```
 

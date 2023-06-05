@@ -26,6 +26,7 @@ writing information of it is :
     ```sh
     .. rootwait modules-load=dwc2,g_ether quiet ..
     ```
+1. set SD card to Raspberry Pi, and launch.
 
 
 ## Package update

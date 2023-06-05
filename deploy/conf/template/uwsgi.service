@@ -1,0 +1,21 @@
+[Unit]
+Description=uWSGI Service
+After=syslog.target
+
+[Service]
+EnvironmentFile=/home/pi-srv/app/RaspberryServer/deploy/conf/template/env.conf
+ExecStart=/bin/sh -c '\
+    . "${RS_PRJ_VENV}"/bin/activate;\
+    uwsgi --ini "${RS_PRJ_CONF}"/uwsgi.ini;\
+'
+RuntimeDirectory=uwsgi
+Restart=always
+KillSignal=SIGQUIT
+StandardError=syslog
+Type=notify
+NotifyAccess=all
+User=pi-srv
+Group=pi-srv
+
+[Install]
+WantedBy=multi-user.target

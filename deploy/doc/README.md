@@ -4,14 +4,14 @@ If you wanna use auto-setup, please see [Installation](../../README.md).
 
 ## Summary
 example setting is:
-- 001_setup_ini.md
+- [Initialization](001_setup_ini.md)
     - SD card Setting
     - Package update
     - Change console style for root
     - Resolve Bluetooth service error
     - SSH Connection Setting
     - (Optional) Hostname change
-- 002_setup_dev.md
+- [Setup For environment](002_setup_dev.md)
     - (Optional) Add user for server
     - (Optional) Firewall Setting
     - Setup Database with PostgreSQL
