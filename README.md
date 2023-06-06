@@ -1,5 +1,5 @@
 # RaspberryServer
-Web Server with Django for Raspberry Pi in stand-alone system.
+Web Server with Django for Raspberry Pi in stand-alone system.  
 You can be easy to develop environment by using this installer.
 
 # Installation
@@ -7,8 +7,8 @@ You can be easy to develop environment by using this installer.
 $ mkdir -p ~/app && cd ~/app
 $ git clone https://github.com/taogya/RaspberryServer.git
 $ cd RaspberryServer/deploy
-$ cp -r deploy/conf/template deploy/conf/pi-srv 
--> edit files in pi-srv
+$ cp -r conf/template conf/pi-srv 
+-> edit files in conf/pi-srv
 $ chmod +x shells/install.sh
 $ sudo sh shells/install.sh conf/pi-srv
 $ 
