@@ -9,7 +9,7 @@ $ git clone https://github.com/taogya/RaspberryServer.git
 $ cd RaspberryServer/deploy
 $ cp -r conf/template conf/pi-srv 
 -> edit files in conf/pi-srv
-$ chmod +x shells/install.sh
+$ chmod -R +x shells
 $ sudo sh shells/install.sh conf/pi-srv
 $ 
 $ sudo su - your_name
