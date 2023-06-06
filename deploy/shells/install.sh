@@ -51,7 +51,7 @@ EOS
 
 install_django() {
     echo "===== install django ====="
-    apt-get install -y python3-dev
+    apt-get install -y python3-dev python3-venv
     su - "${RS_USR_NAME}" << EOS
 mkdir -p "${RS_PRJ_ROOT}/${RS_PRJ_APP}"
 if ! ls "${RS_PRJ_VENV}" > /dev/null 2>&1; then
