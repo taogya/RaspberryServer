@@ -4,7 +4,7 @@ You can be easy to develop environment by using this installer.
 
 # Installation
 ```sh
-$ mkdir -p ~/app && cd ~/app
+$ mkdir -p ~/work && cd ~/work
 $ git clone https://github.com/taogya/RaspberryServer.git
 $ cd RaspberryServer/deploy
 $ cp -r conf/template conf/pi-srv 
