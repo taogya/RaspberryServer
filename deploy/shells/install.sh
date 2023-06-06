@@ -90,7 +90,7 @@ set -o allexport; . "${RS_PRJ_CONF}/env.conf"; set +o allexport
 . "${RS_PRJ_VENV}"/bin/activate
 python "${RS_PRJ_ROOT}/${RS_PRJ_APP}"/manage.py makemigrations
 python "${RS_PRJ_ROOT}/${RS_PRJ_APP}"/manage.py migrate
-python "${RS_PRJ_ROOT}/${RS_PRJ_APP}"/manage.py collectstatic"
+python "${RS_PRJ_ROOT}/${RS_PRJ_APP}"/manage.py collectstatic
 EOS
 }
 
@@ -161,7 +161,6 @@ install_django
 install_uwsgi
 install_nginx
 
-echo "===== create addministor ====="
 echo "===== please manually execute below"
 echo "sudo su - ${RS_USR_NAME}"
 echo "set -o allexport; . ${RS_PRJ_CONF}/env.conf; set +o allexport"
