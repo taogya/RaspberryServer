@@ -4,6 +4,10 @@ You can be easy to develop environment by using this installer.
 
 # Installation
 ```sh
+$ sudo apt-get update
+$ sudo apt-get upgrade
+$ sudo apt-get dist-upgrade
+$ 
 $ mkdir -p ~/work && cd ~/work
 $ git clone https://github.com/taogya/RaspberryServer.git
 $ cd RaspberryServer/deploy
