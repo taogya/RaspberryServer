@@ -6,15 +6,15 @@ server {
     listen      80;
     server_name raspberry-server.local;
     charset     utf-8;
-    access_log  /home/pi-srv/app/RaspberryServer/pi/logs/access.log;
-    error_log   /home/pi-srv/app/RaspberryServer/pi/logs/error.log; 
+    access_log  /home/pi-srv/app/RaspberryServer/pisrv/logs/access.log;
+    error_log   /home/pi-srv/app/RaspberryServer/pisrv/logs/error.log; 
 
     location /static {
-        root /home/pi-srv/app/RaspberryServer/pi/collectstatic;
+        alias /home/pi-srv/app/RaspberryServer/pisrv/collectstatic;
     }
 
     location / {
         uwsgi_pass django;
-        include /home/pi-srv/app/RaspberryServer/deploy/conf/template/uwsgi_params;
+        include /home/pi-srv/app/RaspberryServer/deploy/conf/pi-srv/uwsgi_params;
     }
 }

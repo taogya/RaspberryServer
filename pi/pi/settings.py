@@ -28,7 +28,7 @@ SECRET_KEY = os.environ['RS_PRJ_SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
-DEBUG = os.environ['RS_PRJ_DEBUG'] == 1
+DEBUG = int(os.environ['RS_PRJ_DEBUG']) == 1
 
 # ALLOWED_HOSTS = []
 ALLOWED_HOSTS = os.environ['RS_PRJ_ALLOWED_HOSTS'].split(',')
@@ -58,7 +58,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'pi.urls'
+ROOT_URLCONF = f'{os.environ["RS_PRJ_APP"]}.urls'
 
 TEMPLATES = [
     {
@@ -77,7 +77,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'pi.wsgi.application'
+WSGI_APPLICATION = f'{os.environ["RS_PRJ_APP"]}.wsgi.application'
 
 
 # Database
@@ -96,7 +96,7 @@ DATABASES = {
         'USER': os.environ['RS_DB_USER'],
         'PASSWORD': os.environ['RS_DB_PASSWORD'],
         'HOST': os.environ['RS_DB_HOST'],
-        'PORT': os.environ['RS_DB_PORT'],
+        'PORT': int(os.environ['RS_DB_PORT']),
     },
 }
 
@@ -143,7 +143,7 @@ DATETIME_INPUT_FORMATS += ('%Y-%m-%d %H:%M:%S.%f%z',)
 
 # STATIC_URL = 'static/'
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'collectstatic')
+STATIC_ROOT = os.environ['RS_PRJ_STATIC_ROOT']
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
@@ -200,6 +200,7 @@ LOGGING = {
 
 # Debug Settings
 if DEBUG:
+    # pip install django-debug-toolbar
     INSTALLED_APPS += [
         'debug_toolbar',
     ]

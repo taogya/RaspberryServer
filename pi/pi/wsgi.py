@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pi.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', f'{os.environ["RS_PRJ_APP"]}.settings')
 
 application = get_wsgi_application()

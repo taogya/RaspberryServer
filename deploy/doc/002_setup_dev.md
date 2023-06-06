@@ -53,7 +53,7 @@ $ sudo ufw status
 
 1. make executing python environment
     ```sh
-    $ cd "you_path"/RaspberryServer
+    $ cd /path/to/RaspberryServer
     $ python -m venv .venv
     $ . .venv/bin/activate
     ```
@@ -61,10 +61,10 @@ $ sudo ufw status
 1. make executing Django environment
     ```sh
     $ pip install isort flake8 autopep8 radon
-    $ pip install Django psycopg2-binary
+    $ pip install Django psycopg2-binary django-debug-toolbar
     $ django-admin startproject pi
-    $ sudo sh deploy/shells/secret_key_gen.sh deploy/conf/template/env.conf
-    -> set output to RS_PRJ_SECRET_KEY in deploy/conf/template/env.conf
+    $ sudo sh deploy/shells/secret_key_gen.sh deploy/conf/pi-srv/env.conf
+    -> set output to RS_PRJ_SECRET_KEY in deploy/conf/pi-srv/env.conf
     $ mkdir pi/templates pi/static pi/logs
     $ vi pi/pi/settings.py
     ```
@@ -170,7 +170,7 @@ $ sudo ufw status
 
 1. access test
     ```sh
-    $ export $(cat deploy/conf/template/env.conf | grep -v "^#" | xargs)
+    $ set -o allexport; . deploy/conf/pi-srv/env.conf; set +o allexport
     $ python pi/manage.py makemigrations
     $ python pi/manage.py migrate
     $ python pi/manage.py createsuperuser
@@ -188,14 +188,14 @@ $ sudo ufw status
     ```
 1. modify configration
     ```sh
-    $ vi deploy/conf/template/uwsgi.service
+    $ vi deploy/conf/pi-srv/uwsgi.service
     -> modify as needed.
-    $ vi deploy/conf/template/uwsgi.ini
+    $ vi deploy/conf/pi-srv/uwsgi.ini
     -> modify as needed. (if do connection test, uncomment "http")
     ```
 1. create and start service
     ```sh
-    $ sudo ln -s /home/pi-srv/app/RaspberryServer/deploy/conf/template/uwsgi.service /etc/systemd/system/uwsgi.service
+    $ sudo ln -s /home/pi-srv/app/RaspberryServer/deploy/conf/pi-srv/uwsgi.service /etc/systemd/system/uwsgi.service
     $ sudo systemctl daemon-reload
     $ sudo systemctl enable uwsgi
     $ sudo systemctl start uwsgi
@@ -208,15 +208,15 @@ $ sudo ufw status
     ```
 1. modify configration
     ```sh
-    $ cp /etc/nginx/uwsgi_params deploy/conf/template/uwsgi_params
-    $ vi deploy/conf/template/raspberry-server
+    $ cp /etc/nginx/uwsgi_params deploy/conf/pi-srv/uwsgi_params
+    $ vi deploy/conf/pi-srv/raspberry-server
     -> modify as needed
     ```
 1. create and start service
     ```sh
-    $ sudo ln -s /home/pi-srv/app/RaspberryServer/deploy/conf/template/raspberry-server /etc/nginx/sites-available/
+    $ sudo ln -s /home/pi-srv/app/RaspberryServer/deploy/conf/pi-srv/raspberry-server /etc/nginx/sites-available/raspberry-server
     $ sudo ln -s /etc/nginx/sites-available/raspberry-server /etc/nginx/sites-enabled/raspberry-server
-    $ export $(cat deploy/conf/template/env.conf | grep -v "^#" | xargs)
+    $ set -o allexport; . deploy/conf/pi-srv/env.conf; set +o allexport
     $ python pi/manage.py collectstatic
     $ sudo systemctl enable nginx
     $ sudo systemctl start nginx
