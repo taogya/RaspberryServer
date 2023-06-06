@@ -91,6 +91,6 @@ printf "Do you remove they? [Y/n]: "
 read -r INIT_DONE
 case "${INIT_DONE}" in
     [yY])
-        apt-get purge -y postgresql nginx libpcre3-dev python3-dev
+        apt-get purge --auto-remove -y postgresql nginx libpcre3-dev python3-dev
     ;;
 esac
