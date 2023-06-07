@@ -84,6 +84,9 @@ EOS
         TMP_SECRET_KEY=$(shells/secret_key_gen.sh "${RS_PRJ_CONF}/env.conf")
         sed -i "s/RS_PRJ_SECRET_KEY=/RS_PRJ_SECRET_KEY=\"${TMP_SECRET_KEY}\"/g" "${RS_PRJ_CONF}"/env.conf
     fi
+    rm -rf "${RS_PRJ_STATIC_ROOT}"
+    mkdir -p "${RS_PRJ_STATIC_ROOT}"
+    chown -R "${RS_USR_NAME}":"${RS_USR_NAME}" "${RS_PRJ_STATIC_ROOT}"
     su - "${RS_USR_NAME}" << EOS
 echo "===== migration"
 set -o allexport; . "${RS_PRJ_CONF}/env.conf"; set +o allexport
@@ -97,12 +100,14 @@ EOS
 install_uwsgi() {
     echo "===== install uwsgi ====="
     apt-get install -y libpcre3-dev
+    mkdir -p /var/log/uwsgi
+    chown -R "${RS_USR_NAME}":"${RS_USR_NAME}" /var/log/uwsgi
     su - "${RS_USR_NAME}" << EOS
 . "${RS_PRJ_VENV}"/bin/activate
 pip install uwsgi
 EOS
     echo "===== enable uwsgi service ====="
-    ln -s "${RS_PRJ_CONF}"/uwsgi.service /etc/systemd/system/uwsgi.service
+    ln -fs "${RS_PRJ_CONF}"/uwsgi.service /etc/systemd/system/uwsgi.service
     systemctl daemon-reload
     systemctl enable uwsgi
     systemctl start uwsgi
@@ -112,8 +117,8 @@ install_nginx() {
     echo "===== install nginx ====="
     apt-get install -y nginx
     echo "===== enable nginx service ====="
-    ln -s "${RS_PRJ_CONF}"/raspberry-server /etc/nginx/sites-available/raspberry-server
-    ln -s /etc/nginx/sites-available/raspberry-server /etc/nginx/sites-enabled/raspberry-server
+    ln -fs "${RS_PRJ_CONF}"/raspberry-server /etc/nginx/sites-available/raspberry-server
+    ln -fs /etc/nginx/sites-available/raspberry-server /etc/nginx/sites-enabled/raspberry-server
     gpasswd -a www-data "${RS_USR_NAME}"
     systemctl enable nginx
     systemctl start nginx

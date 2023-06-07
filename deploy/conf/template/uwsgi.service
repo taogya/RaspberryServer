@@ -3,6 +3,7 @@ Description=uWSGI Service
 After=syslog.target
 
 [Service]
+# set path to env.conf
 EnvironmentFile=/home/pi-srv/app/RaspberryServer/deploy/conf/pi-srv/env.conf
 ExecStart=/bin/sh -c '\
     . "${RS_PRJ_VENV}"/bin/activate;\

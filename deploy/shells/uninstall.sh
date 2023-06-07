@@ -35,7 +35,6 @@ delete_for_server() {
 }
 
 remove_uwsgi_service() {
-    systemctl daemon-reload
     systemctl stop uwsgi
     systemctl disable uwsgi
     unlink /etc/systemd/system/uwsgi.service
@@ -91,6 +90,8 @@ printf "Do you remove they? [Y/n]: "
 read -r INIT_DONE
 case "${INIT_DONE}" in
     [yY])
+        systemctl stop postgresql
+        systemctl disable postgresql
         apt-get purge --auto-remove -y postgresql* nginx libpcre3-dev python3-dev python3-venv
         rm -rf /var/log/postgresql /var/lib/postgresql /etc/postgresql
     ;;
