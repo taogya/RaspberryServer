@@ -154,7 +154,7 @@ create_database "${RS_DB_NAME}" "${RS_USR_NAME}" "${RS_DB_PASSWORD}"
 echo "===== copy conf file =====" 
 mkdir -p "${RS_PRJ_CONF}"
 cp -f "$1"/* "${RS_PRJ_CONF}"
-chmod -R 700 "${RS_PRJ_ROOT}"
+chmod -R 770 "${RS_PRJ_ROOT}"
 chown -R "${RS_USR_NAME}":"${RS_USR_NAME}" "${RS_PRJ_ROOT}"
 
 install_django

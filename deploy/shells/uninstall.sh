@@ -86,11 +86,12 @@ esac
 
 echo "===== remove packages ====="
 echo "Dependent packages"
-echo "    postgresql nginx libpcre3-dev python3-dev"
+echo "    postgresql* nginx libpcre3-dev python3-dev python3-venv"
 printf "Do you remove they? [Y/n]: "
 read -r INIT_DONE
 case "${INIT_DONE}" in
     [yY])
-        apt-get purge --auto-remove -y postgresql nginx libpcre3-dev python3-dev
+        apt-get purge --auto-remove -y postgresql* nginx libpcre3-dev python3-dev python3-venv
+        rm -rf /var/log/postgresql /var/lib/postgresql /etc/postgresql
     ;;
 esac
