@@ -1,0 +1,9 @@
+.DS_Store
+__pycache__
+.venv
+
+deploy/conf/*
+!deploy/conf/template
+!deploy/conf/template/*
+
+*/logs/*
