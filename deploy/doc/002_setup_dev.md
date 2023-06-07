@@ -1,7 +1,7 @@
 # Setup for development on Raspberry pi
 ## (Optional) Add user for server
 ```sh
-$ sudo adduser --disabled-password pi-srv
+$ sudo adduser --disabled-password --gecos "" pi-srv
 ```
 
 ## (Optional) Firewall Setting
@@ -19,6 +19,8 @@ $ sudo ufw status
 1. Installation Middleware
     ```sh
     $ sudo apt-get install -y postgresql
+    $ systemctl start postgresql.service
+    $ systemctl enable postgresql.service
     ```
 1. Server configuration
     ```sh
@@ -42,13 +44,15 @@ $ sudo ufw status
     $ createdb -E UTF8 -O pi-srv raspberry_server_db
     $ psql
     postgres=# grant all on database raspberry_server_db to pi-srv;
+    postgres=# \q
+    $ exit
     ```
     cf. [commands](https://www.postgresql.jp/document/9.2/html/reference-client.html)
 
 ## Setup Web Application with Django
 1. package installation
     ```sh
-    $ sudo apt-get install -y python3-dev
+    $ sudo apt-get install -y python3-dev python3-venv
     ```
 
 1. make executing python environment
@@ -170,9 +174,11 @@ $ sudo ufw status
 
 1. access test
     ```sh
+    $ chmod -R 770 ./
     $ set -o allexport; . deploy/conf/pi-srv/env.conf; set +o allexport
     $ python pi/manage.py makemigrations
     $ python pi/manage.py migrate
+    $ python pi/manage.py collectstatic
     $ python pi/manage.py createsuperuser
     -> input info of super user
     $ python pi/manage.py runserver 0.0.0.0:8080
@@ -197,8 +203,8 @@ $ sudo ufw status
     ```sh
     $ sudo ln -s /home/pi-srv/app/RaspberryServer/deploy/conf/pi-srv/uwsgi.service /etc/systemd/system/uwsgi.service
     $ sudo systemctl daemon-reload
-    $ sudo systemctl enable uwsgi
     $ sudo systemctl start uwsgi
+    $ sudo systemctl enable uwsgi
     ```
 
 ## Setup Web Server with nginx
@@ -216,9 +222,8 @@ $ sudo ufw status
     ```sh
     $ sudo ln -s /home/pi-srv/app/RaspberryServer/deploy/conf/pi-srv/raspberry-server /etc/nginx/sites-available/raspberry-server
     $ sudo ln -s /etc/nginx/sites-available/raspberry-server /etc/nginx/sites-enabled/raspberry-server
-    $ set -o allexport; . deploy/conf/pi-srv/env.conf; set +o allexport
-    $ python pi/manage.py collectstatic
-    $ sudo systemctl enable nginx
+    $ sudo gpasswd -a www-data pi-srv
     $ sudo systemctl start nginx
+    $ sudo systemctl enable nginx
     ```
 

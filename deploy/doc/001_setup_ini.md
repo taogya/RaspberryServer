@@ -3,15 +3,15 @@
 You need to get ready work below before writing SD card.
 1. write to SD card with Raspberry Pi Imager.  
 writing information of it is :  
-    - &#9745; Hostname  
+    - &#9989; Hostname  
     **raspberry-server.local**
-    - &#9745; SSH  
+    - &#9989; SSH  
     Select **Password Authentication**
-    - &#9745; Username and Password  
+    - &#9989; Username and Password  
     Username : **pi-srv**
     Password : **pi012srv**
-    - &#9744; Wi-Fi
-    - &#9745; Locale  
+    - &#9745; Wi-Fi
+    - &#9989; Locale  
     Timezone : **Asia/Tokyo**  
     Keboard layout : **jp**
 1. modify files below in /boot.
@@ -38,7 +38,7 @@ $ sudo apt-get dist-upgrade
 $ sudo reboot now
 ```
 
-## Change console style for root
+## (Optional) Change console style for root
 You set console color to red.
 ```sh
 $ sudo vi /root/.bashrc
@@ -47,7 +47,7 @@ PS1='${debian_chroot:+($debian_chroot)}\[\033[01;31m\]\u@\h\[\033[00m\]:\[\033[0
 :
 ```
 
-## Resolve Bluetooth service error
+## (Optional) Resolve Bluetooth service error
 You will resolve error below.
 ```sh
 $ sudo systemctl status bluetooth.service
@@ -80,7 +80,7 @@ Apr 30 22:19:44 raspberrypi bluetoothd[886]: Failed to set privacy: Rejected (0x
     $ sudo systemctl restart bluetooth
     ```
 
-## SSH Connection Setting
+## (Optional) SSH Connection Setting
 You configure Public-key Authentication for SSH.
 ```sh
 $ mkdir ~/.ssh
