@@ -28,10 +28,9 @@ EOS
 
 delete_for_server() {
     # $1: user name
-    pkill -u "$1"
+    # pkill -u "$1"
     gpasswd -d www-data "${RS_USR_NAME}"
-    deluser "$1"
-    rm -rf /home/"${1:?}"
+    deluser "$1" && rm -rf /home/"${1:?}"
 }
 
 remove_uwsgi_service() {
@@ -74,15 +73,6 @@ case "${INIT_DONE}" in
     ;;
 esac
 
-echo "===== delete user ====="
-printf "Do you remove user? [Y/n]: "
-read -r INIT_DONE
-case "${INIT_DONE}" in
-    [yY])
-        delete_for_server "${RS_USR_NAME}"
-    ;;
-esac
-
 echo "===== remove packages ====="
 echo "Dependent packages"
 echo "    postgresql* nginx libpcre3-dev python3-dev python3-venv"
@@ -94,5 +84,14 @@ case "${INIT_DONE}" in
         systemctl disable postgresql
         apt-get purge --auto-remove -y postgresql* nginx libpcre3-dev python3-dev python3-venv
         rm -rf /var/log/postgresql /var/lib/postgresql /etc/postgresql
+    ;;
+esac
+
+echo "===== delete user ====="
+printf "Do you remove user? [Y/n]: "
+read -r INIT_DONE
+case "${INIT_DONE}" in
+    [yY])
+        delete_for_server "${RS_USR_NAME}"
     ;;
 esac
