@@ -10,6 +10,7 @@ Group=pi-srv
 # set path to env.conf
 EnvironmentFile=/home/pi-srv/app/RaspberryServer/deploy/conf/pi-srv/env.conf
 ExecStart=/bin/sh -c '\
+    set -o allexport; . ${RS_PRJ_CONF}/env.conf; set +o allexport;\
     . "${RS_PRJ_VENV}"/bin/activate;\
     uwsgi --ini "${RS_PRJ_CONF}"/uwsgi.ini;\
 '
