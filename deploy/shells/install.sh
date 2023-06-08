@@ -122,6 +122,7 @@ install_nginx() {
     gpasswd -a www-data "${RS_USR_NAME}"
     systemctl enable nginx
     systemctl start nginx
+    systemctl start nginx
 }
 
 # ===== script =================================================="
