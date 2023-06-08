@@ -56,4 +56,4 @@ You please see [doc](./deploy/doc/README.md).
 | ------ | -- |
 | &#9989; | 4 B |
 | &#9745; | 3 B+ |
-| &#9745; | Zero W |
+| &#9989; | Zero W |
