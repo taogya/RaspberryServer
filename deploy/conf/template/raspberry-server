@@ -1,20 +1,26 @@
 upstream django {
+    # set socket name set by set uwsgi.ini.
     server unix:///var/run/uwsgi/uwsgi.sock;
 }
 
 server {
     listen      80;
+    # set your hostname.
     server_name raspberry-server.local;
     charset     utf-8;
-    access_log  /home/pi-srv/app/RaspberryServer/pisrv/logs/access.log;
-    error_log   /home/pi-srv/app/RaspberryServer/pisrv/logs/error.log; 
+    
+    # set your log directory.
+    access_log  /var/log/nginx/access.log;
+    error_log   /var/log/nginx/error.log; 
 
     location /static {
-        alias /home/pi-srv/app/RaspberryServer/pisrv/collectstatic;
+        # set your static directory.
+        alias /home/pi-srv/app/RaspberryServer/static;
     }
 
     location / {
         uwsgi_pass django;
+        # set your uwsgi_params directory.
         include /home/pi-srv/app/RaspberryServer/deploy/conf/pi-srv/uwsgi_params;
     }
 }

@@ -3,6 +3,11 @@ Description=uWSGI Service
 After=syslog.target
 
 [Service]
+# set your user name
+User=pi-srv
+# set your group name
+Group=pi-srv
+# set path to env.conf
 EnvironmentFile=/home/pi-srv/app/RaspberryServer/deploy/conf/pi-srv/env.conf
 ExecStart=/bin/sh -c '\
     . "${RS_PRJ_VENV}"/bin/activate;\
@@ -14,8 +19,6 @@ KillSignal=SIGQUIT
 StandardError=syslog
 Type=notify
 NotifyAccess=all
-User=pi-srv
-Group=pi-srv
 
 [Install]
 WantedBy=multi-user.target
