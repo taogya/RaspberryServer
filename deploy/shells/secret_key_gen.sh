@@ -3,7 +3,7 @@
 # ex. 
 # $ pwd
 # /home/pi-srv/RaspberryServer/deploy
-# $ sudo sh shells/secret_key_gen.sh conf/template/env.conf
+# $ sudo sh shells/secret_key_gen.sh conf/pi-srv/env.conf
 
 # import environment variables
 . "$1"
