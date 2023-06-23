@@ -3,15 +3,12 @@ Description=uWSGI Service
 After=syslog.target
 
 [Service]
-# set your user name
 User=pi-srv
-# set your group name
 Group=pi-srv
-# set path to env.conf
-EnvironmentFile=/home/pi-srv/app/RaspberryServer/deploy/conf/pi-srv/env.conf
+WorkingDirectory=/home/pi-srv/app/RaspberryServer/
 ExecStart=/bin/sh -c '\
-    . "${RS_PRJ_VENV}"/bin/activate;\
-    uwsgi --ini "${RS_PRJ_CONF}"/uwsgi.ini;\
+    . .venv/bin/activate;\
+    uwsgi --ini conf/uwsgi/uwsgi.ini;\
 '
 RuntimeDirectory=uwsgi
 Restart=always

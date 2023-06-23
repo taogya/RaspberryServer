@@ -5,22 +5,16 @@ upstream django {
 
 server {
     listen      80;
-    # set your hostname.
-    server_name raspberry-server.local;
+    # set your allowed host.
+    server_name localhost raspberry-server.local;
     charset     utf-8;
     
     # set your log directory.
     access_log  /var/log/nginx/access.log;
     error_log   /var/log/nginx/error.log; 
 
-    location /static {
-        # set your static directory.
-        alias /home/pi-srv/app/RaspberryServer/static;
-    }
-
     location / {
         uwsgi_pass django;
-        # set your uwsgi_params directory.
-        include /home/pi-srv/app/RaspberryServer/deploy/conf/pi-srv/uwsgi_params;
+        include uwsgi_params;
     }
 }

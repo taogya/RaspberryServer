@@ -7,13 +7,12 @@ help() {
     echo "===== Raspberry Server Uninstaller ==========================="
     echo "===== Usage =================================================="
     echo "Argument"
-    echo "  shells/uninstall.sh <conf>"
+    echo "  shells/uninstall.sh <user> <conf>"
+    echo "    <user>: project administrator."
     echo "    <conf>: configuration path."
     echo "ex."
-    echo "  $ pwd"
-    echo "  /path/to/RaspberryServer"
     echo "  $ cd deploy"
-    echo "  $ sudo shells/uninstall.sh conf/pi-srv"
+    echo "  $ sudo shells/uninstall.sh pi-srv conf/pi-srv"
     echo "=============================================================="
 }
 
@@ -29,7 +28,7 @@ EOS
 delete_for_server() {
     # $1: user name
     # pkill -u "$1"
-    gpasswd -d www-data "${RS_USR_NAME}"
+    #gpasswd -d www-data "${RS_USR_NAME}"
     deluser "$1" && rm -rf /home/"${1:?}"
 }
 
@@ -37,13 +36,17 @@ remove_uwsgi_service() {
     systemctl stop uwsgi
     systemctl disable uwsgi
     unlink /etc/systemd/system/uwsgi.service
+    rm -rf /var/log/uwsgi
 }
 
 remove_nginx_service() {
     systemctl stop nginx
     systemctl disable nginx
-    unlink /etc/nginx/sites-available/raspberry-server
-    unlink /etc/nginx/sites-enabled/raspberry-server
+    for d in /etc/nginx/sites-available/* /etc/nginx/sites-enabled/*
+    do
+        echo "unlink ${d}"
+        unlink "${d}"
+    done
 }
 
 # ===== script =================================================="
@@ -52,13 +55,13 @@ if [ "$(whoami)" != "root" ]; then
     exit 1
 fi
 
-if [ "$#" != 1 ]; then
+if [ "$#" != 2 ]; then
     echo "===== invalid argument. ===="
     help
     exit 1
 fi
 
-. "$1"/env.conf
+. "$2"/.env
 
 echo "===== disable nginx/uwsgi service ====="
 remove_nginx_service
@@ -69,7 +72,7 @@ printf "Do you drop database? [Y/n]: "
 read -r INIT_DONE
 case "${INIT_DONE}" in
     [yY]) 
-        drop_database "${RS_DB_NAME}" "${RS_USR_NAME}" 
+        drop_database "${DB_NAME}" "$1" 
     ;;
 esac
 
@@ -92,6 +95,6 @@ printf "Do you remove user? [Y/n]: "
 read -r INIT_DONE
 case "${INIT_DONE}" in
     [yY])
-        delete_for_server "${RS_USR_NAME}"
+        delete_for_server "$1"
     ;;
 esac

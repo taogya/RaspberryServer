@@ -2,6 +2,7 @@
 ## (Optional) Add user for server
 ```sh
 $ sudo adduser --disabled-password --gecos "" pi-srv
+$ sudo chmod 750 /home/pi-srv
 ```
 
 ## (Optional) Firewall Setting
@@ -19,8 +20,6 @@ $ sudo ufw status
 1. Installation Middleware
     ```sh
     $ sudo apt-get install -y postgresql
-    $ systemctl start postgresql.service
-    $ systemctl enable postgresql.service
     ```
 1. Server configuration
     ```sh
@@ -32,20 +31,19 @@ $ sudo ufw status
     /etc/postgresql/13/main/pg_hba.conf
     $ sudo vi "${PG_HBA}"
     -> change auth-method as needed
-    $ sudo systemctl start postgresql.service
+    $ sudo systemctl stop postgresql.service
     $ sudo systemctl enable postgresql.service
+    $ sudo systemctl start postgresql.service
     $ sudo systemctl status postgresql.service
     ```
 1. Client configuration
     ```sh
-    $ sudo su - postgres
-    $ createuser -P pi-srv
-    -> password
-    $ createdb -E UTF8 -O pi-srv raspberry_server_db
-    $ psql
-    postgres=# grant all on database raspberry_server_db to pi-srv;
-    postgres=# \q
-    $ exit
+    $ sudo su - postgres << EOS
+    psql -U postgres -t -P format=unaligned -c 'create database raspberry_server_db encoding utf8;'
+    psql -U postgres -t -P format=unaligned -c "create user \"pi-srv\" with password 'pi-srv#pass';"
+    psql -U postgres -t -P format=unaligned -c 'alter database raspberry_server_db owner to "pi-srv";'
+    psql -U postgres -t -P format=unaligned -c 'grant all on database raspberry_server_db to "pi-srv";'
+    EOS
     ```
     cf. [commands](https://www.postgresql.jp/document/9.2/html/reference-client.html)
 
@@ -57,7 +55,9 @@ $ sudo ufw status
 
 1. make executing python environment
     ```sh
-    $ cd /path/to/RaspberryServer
+    $ sudo su - pi-srv
+    $ mkdir -p app/RaspberryServer
+    $ cd app/RaspberryServer
     $ python -m venv .venv
     $ . .venv/bin/activate
     ```
@@ -65,40 +65,81 @@ $ sudo ufw status
 1. make executing Django environment
     ```sh
     $ pip install isort flake8 autopep8 radon
-    $ pip install Django psycopg2-binary django-debug-toolbar
+    $ pip install Django psycopg2-binary django-debug-toolbar django-environ
     $ django-admin startproject pi
-    $ sudo sh deploy/shells/secret_key_gen.sh deploy/conf/pi-srv/env.conf
-    -> set output to RS_PRJ_SECRET_KEY in deploy/conf/pi-srv/env.conf
-    $ mkdir pi/templates pi/static pi/logs
+    $ python -c "from django.core.management.utils import get_random_secret_key;print(get_random_secret_key())"
+    -> set output to SECRET_KEY in .env
+    # create .env at same directory to settings.py
+    $ vi pi/pi/.env
+    # ### Project Configration
+    # BASE_DIR should be project_dir/app_name.
+    BASE_DIR=/home/pi-srv/app/RaspberryServer/pi
+    VENV_DIR=/home/pi-srv/app/RaspberryServer/.venv
+    STATIC_ROOT=/home/pi-srv/app/RaspberryServer/static
+    LOG_DIR=/home/pi-srv/app/RaspberryServer/log
+    # ### Database Configration
+    DB_ENGINE=django.db.backends.postgresql
+    DB_NAME=raspberry_server_db
+    # If DB authentication method is peer, it should be same as RS_USR_NAME.
+    DB_USER=pi-srv
+    DB_PASSWORD="pi-srv#pass"
+    DB_HOST=localhost
+    DB_PORT=5432
+    # ### Application Configration
+    # auto set if SECRET_KEY is empty.
+    SECRET_KEY=
+    ALLOWED_HOSTS=localhost,raspberry-server.local
+    DEBUG=True
+    ROOT_URLCONF=pi.urls
+    WSGI_APPLICATION=pi.wsgi.application
+
+    $ mkdir pi/templates pi/static log static
     $ vi pi/pi/settings.py
     ```
     ```python
     :
     import os
+    from pathlib import Path
+
+    import environ
     from django.conf.global_settings import DATETIME_INPUT_FORMATS
+
+    # Take environment variables from .env file
+    env = environ.Env(
+        # set casting, default value
+        DEBUG=(bool, False)
+    )
+    environ.Env.read_env(os.path.join(Path(__file__).resolve().parent, '.env'))
+
+    # Build paths inside the project like this: BASE_DIR / 'subdir'.
+    BASE_DIR = env('BASE_DIR')
     :
-    SECRET_KEY = os.environ['RS_PRJ_SECRET_KEY']
+    SECRET_KEY = env('SECRET_KEY')
     :
-    DEBUG = os.environ['RS_PRJ_DEBUG'] == 1
+    DEBUG = env('DEBUG')
     :
-    ALLOWED_HOSTS = os.environ['RS_PRJ_ALLOWED_HOSTS'].split(',')
+    ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
     :
     PROJECT_APPS = [
     ]
     INSTALLED_APPS += PROJECT_APPS
     :
+    ROOT_URLCONF = env('ROOT_URLCONF')
+
     TEMPLATES = [
     :
             'DIRS': [os.path.join(BASE_DIR, 'templates')],
     :
+    WSGI_APPLICATION = env('WSGI_APPLICATION')
+    :
     DATABASES = {
         'default': {
-            'ENGINE': os.environ['RS_DB_ENGINE'],
-            'NAME': os.environ['RS_DB_NAME'],
-            'USER': os.environ['RS_DB_USER'],
-            'PASSWORD': os.environ['RS_DB_PASSWORD'],
-            'HOST': os.environ['RS_DB_HOST'],
-            'PORT': os.environ['RS_DB_PORT'],
+            'ENGINE': env(_DB_ENGINE'),
+            'NAME': env('DB_NAME'),
+            'USER': env('DB_USER'),
+            'PASSWORD': env('DB_PASSWORD'),
+            'HOST': env('DB_HOST'),
+            'PORT': int(env('DB_PORT')),
         },
     }
     :
@@ -111,13 +152,13 @@ $ sudo ufw status
     DATETIME_INPUT_FORMATS += ('%Y-%m-%d %H:%M:%S.%f%z',)
     :
     STATIC_URL = '/static/'
-    STATIC_ROOT = os.path.join(BASE_DIR, 'collectstatic')
+    STATIC_ROOT = env('STATIC_ROOT')
     STATICFILES_DIRS = (
         os.path.join(BASE_DIR, 'static'),
     )
     :
     # CommonLogger Settings
-    LOG_BASE_DIR = os.path.join(BASE_DIR, 'logs')
+    LOG_DIR = env('LOG_DIR')
     LOGGING = {
         "version": 1,
         "disable_existing_loggers": False,
@@ -145,7 +186,7 @@ $ sudo ufw status
             "general": {
                 "level": "INFO",
                 "class": "logging.handlers.WatchedFileHandler",
-                "filename": os.path.join(LOG_BASE_DIR, "general.log"),
+                "filename": os.path.join(LOG_DIR, "general.log"),
                 "formatter": "simple",
             },
         },
@@ -174,8 +215,6 @@ $ sudo ufw status
 
 1. access test
     ```sh
-    $ chmod -R 770 ./
-    $ set -o allexport; . deploy/conf/pi-srv/env.conf; set +o allexport
     $ python pi/manage.py makemigrations
     $ python pi/manage.py migrate
     $ python pi/manage.py collectstatic
@@ -190,21 +229,83 @@ $ sudo ufw status
 1. package installation
     ```sh
     $ sudo apt-get install libpcre3-dev
+    $ sudo su - pi-srv
+    $ cd app/RaspberryServer
+    $ . .venv/bin/activate
     $ pip install uwsgi
     ```
 1. modify configration
     ```sh
-    $ vi deploy/conf/pi-srv/uwsgi.service
-    -> modify as needed.
-    $ vi deploy/conf/pi-srv/uwsgi.ini
-    -> modify as needed. (if do connection test, uncomment "http")
+    $ mkdir -p conf/uwsgi
+    $ vi conf/uwsgi/uwsgi.service
+    [Unit]
+    Description=uWSGI Service
+    After=syslog.target
+
+    [Service]
+    User=pi-srv
+    Group=pi-srv
+    WorkingDirectory=/home/pi-srv/app/RaspberryServer/
+    ExecStart=/bin/sh -c '\
+        . .venv/bin/activate;\
+        uwsgi --ini conf/uwsgi/uwsgi.ini;\
+    '
+    RuntimeDirectory=uwsgi
+    Restart=always
+    KillSignal=SIGQUIT
+    StandardError=syslog
+    Type=notify
+    NotifyAccess=all
+
+    [Install]
+    WantedBy=multi-user.target
+
+    $ vi conf/uwsgi/uwsgi.ini
+    [uwsgi]
+    # same to VENV_DIR
+    home = /home/pi-srv/app/RaspberryServer/.venv
+
+    socket = /var/run/uwsgi/uwsgi.sock
+    pidfile = /var/run/uwsgi/master.pid
+    http = 0.0.0.0:8080
+    master = true
+    vacuum = true
+    chmod-socket = 666
+    uid = pi-srv
+    gid = pi-srv
+
+    processes = 2
+    enable-threads = true
+    threads = 4
+
+    logto = /var/log/uwsgi/uwsgi.log
+    log-reopen = true
+    log-x-forwarded-for = true
+
+    # same to BASE_DIR
+    chdir = /home/pi-srv/app/RaspberryServer/pi
+    wsgi-file = /home/pi-srv/app/RaspberryServer/pi/pi/wsgi.py
+    # same to STATIC_ROOT
+    static-map = /static=/home/pi-srv/app/RaspberryServer/static
+    harakiri = 20
+    max-requests = 5000
+    buffer-size = 32768
     ```
-1. create and start service
+1. create and connection test
     ```sh
-    $ sudo ln -s /home/pi-srv/app/RaspberryServer/deploy/conf/pi-srv/uwsgi.service /etc/systemd/system/uwsgi.service
+    $ sudo ln -fs /home/pi-srv/app/RaspberryServer/conf/uwsgi/uwsgi.service /etc/systemd/system/uwsgi.service
     $ sudo systemctl daemon-reload
+    $ sudo systemctl stop uwsgi
     $ sudo systemctl start uwsgi
+    ```
+    try access URL below on local browser after configure ssh port forwarding.
+    http://localhost:8080/admin
+1. reconfig and start service
+    ```sh
+    $ sudo sed -i 's/http = 0.0.0.0:8080/#http = 0.0.0.0:8080/g' /home/pi-srv/app/RaspberryServer/conf/uwsgi/uwsgi.ini
+    $ sudo systemctl stop uwsgi
     $ sudo systemctl enable uwsgi
+    $ sudo systemctl start uwsgi
     ```
 
 ## Setup Web Server with nginx
@@ -214,16 +315,37 @@ $ sudo ufw status
     ```
 1. modify configration
     ```sh
-    $ cp /etc/nginx/uwsgi_params deploy/conf/pi-srv/uwsgi_params
-    $ vi deploy/conf/pi-srv/raspberry-server
-    -> modify as needed
+    $ mkdir -p conf/nginx
+    $ vi conf/nginx/raspberry-server.conf
+    upstream django {
+        # set socket name set by set uwsgi.ini.
+        server unix:///var/run/uwsgi/uwsgi.sock;
+    }
+
+    server {
+        listen      80;
+        # set your allowed host.
+        server_name localhost raspberry-server.local;
+        charset     utf-8;
+        
+        # set your log directory.
+        access_log  /var/log/nginx/access.log;
+        error_log   /var/log/nginx/error.log; 
+
+        location / {
+            uwsgi_pass django;
+            include uwsgi_params;
+        }
+    }
     ```
 1. create and start service
     ```sh
-    $ sudo ln -s /home/pi-srv/app/RaspberryServer/deploy/conf/pi-srv/raspberry-server /etc/nginx/sites-available/raspberry-server
-    $ sudo ln -s /etc/nginx/sites-available/raspberry-server /etc/nginx/sites-enabled/raspberry-server
-    $ sudo gpasswd -a www-data pi-srv
-    $ sudo systemctl start nginx
+    $ sudo ln -fs /home/pi-srv/app/RaspberryServer/conf/nginx/raspberry-server.conf /etc/nginx/sites-available/raspberry-server.conf
+    $ sudo ln -fs /etc/nginx/sites-available/raspberry-server.conf /etc/nginx/sites-enabled/raspberry-server.conf
+    $ sudo systemctl stop nginx
     $ sudo systemctl enable nginx
+    $ sudo systemctl start nginx
     ```
+    try access URL below on local browser after configure ssh port forwarding.
+    http://localhost:8888/admin
 

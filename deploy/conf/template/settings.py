@@ -13,25 +13,31 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 
+import environ
 from django.conf.global_settings import DATETIME_INPUT_FORMATS
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+# Take environment variables from .env file
+env = environ.Env(
+    # set casting, default value
+    DEBUG=(bool, False)
+)
+environ.Env.read_env(os.path.join(Path(__file__).resolve().parent, '.env'))
 
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = env('BASE_DIR')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = 'django-insecure-)83sgu1s)w8lvyoqewd3w(f)t(&7h08$q9g&2+!mig84jj@f(5'
-SECRET_KEY = os.environ['RS_PRJ_SECRET_KEY']
+# SECRET_KEY = 'django-insecure-xxxxx'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
-DEBUG = int(os.environ['RS_PRJ_DEBUG']) == 1
+DEBUG = env('DEBUG')
 
-# ALLOWED_HOSTS = []
-ALLOWED_HOSTS = os.environ['RS_PRJ_ALLOWED_HOSTS'].split(',')
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
 
 # Application definition
@@ -58,7 +64,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = f'{os.environ["RS_PRJ_APP"]}.urls'
+ROOT_URLCONF = env('ROOT_URLCONF')
 
 TEMPLATES = [
     {
@@ -77,7 +83,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = f'{os.environ["RS_PRJ_APP"]}.wsgi.application'
+WSGI_APPLICATION = env('WSGI_APPLICATION')
 
 
 # Database
@@ -91,12 +97,12 @@ WSGI_APPLICATION = f'{os.environ["RS_PRJ_APP"]}.wsgi.application'
 # }
 DATABASES = {
     'default': {
-        'ENGINE': os.environ['RS_DB_ENGINE'],
-        'NAME': os.environ['RS_DB_NAME'],
-        'USER': os.environ['RS_DB_USER'],
-        'PASSWORD': os.environ['RS_DB_PASSWORD'],
-        'HOST': os.environ['RS_DB_HOST'],
-        'PORT': int(os.environ['RS_DB_PORT']),
+        'ENGINE': env('DB_ENGINE'),
+        'NAME': env('DB_NAME'),
+        'USER': env('DB_USER'),
+        'PASSWORD': env('DB_PASSWORD'),
+        'HOST': env('DB_HOST'),
+        'PORT': int(env('DB_PORT')),
     },
 }
 
@@ -143,7 +149,7 @@ DATETIME_INPUT_FORMATS += ('%Y-%m-%d %H:%M:%S.%f%z',)
 
 # STATIC_URL = 'static/'
 STATIC_URL = '/static/'
-STATIC_ROOT = os.environ['RS_PRJ_STATIC_ROOT']
+STATIC_ROOT = env('STATIC_ROOT')
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
@@ -154,7 +160,7 @@ STATICFILES_DIRS = (
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CommonLogger Settings
-LOG_BASE_DIR = os.path.join(BASE_DIR, 'logs')
+LOG_DIR = env('LOG_DIR')
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -182,7 +188,7 @@ LOGGING = {
         "general": {
             "level": "INFO",
             "class": "logging.handlers.WatchedFileHandler",
-            "filename": os.path.join(LOG_BASE_DIR, "general.log"),
+            "filename": os.path.join(LOG_DIR, "general.log"),
             "formatter": "simple",
         },
     },

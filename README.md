@@ -31,8 +31,6 @@ $ git clone https://github.com/taogya/RaspberryServer.git
 $ cd RaspberryServer/deploy
 $ cp -r conf/template conf/pi-srv 
 -> edit files in conf/pi-srv
--> **caution**
-->   do not use environment variables in env.conf
 $ chmod -R +x shells
 $ sudo sh shells/install.sh conf/pi-srv
 ```

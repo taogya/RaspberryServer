@@ -3,7 +3,7 @@
 # ex. 
 # $ pwd
 # /home/pi-srv/RaspberryServer/deploy
-# $ sudo sh shells/regenerate_database.sh conf/pi-srv/env.conf
+# $ sudo sh shells/regenerate_database.sh conf/pi-srv/.env
 
 # import environment variables
 . "$1"
